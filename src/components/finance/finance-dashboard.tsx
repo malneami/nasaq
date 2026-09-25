@@ -11,6 +11,7 @@ import { formatMoney } from '@/lib/money';
 import type { AppLocale } from '@/lib/i18n/routing';
 import { daysInMonth } from '@/lib/finance/intelligence/summary';
 import { MoneyBars, TrendBars } from '@/components/finance/money-bars';
+import { IncomeStreams } from '@/components/finance/income-streams';
 import { Button } from '@/components/ui/button';
 
 function monthEnd(monthYmd: string) {
@@ -308,6 +309,14 @@ export function FinanceDashboard({
           })}
         </p>
       </section>
+
+      <IncomeStreams
+        incomeMinor={summary.incomeMinor}
+        expensesMinor={summary.expensesMinor}
+        currency={currency}
+        byIncomeSource={summary.byIncomeSource}
+        month={month}
+      />
 
       <section>
         <h3 className="mb-3 text-sm font-medium">{t('trendTitle')}</h3>

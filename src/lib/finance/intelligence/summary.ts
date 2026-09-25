@@ -91,10 +91,14 @@ export function computeMonthlyFinanceSummary(input: {
   const byCategory = new Map<string, MoneyBucket>();
   const byScope = new Map<string, MoneyBucket>();
   const byFixedVariable = new Map<string, MoneyBucket>();
+  const byIncomeSource = new Map<string, MoneyBucket>();
 
   for (const row of inMonth) {
     if (isIncome(row.type)) {
       incomeMinor += row.amount;
+      const sourceKey = row.merchant ?? 'uncategorized';
+      const sourceLabel = row.merchant ?? 'Uncategorized';
+      bucketPush(byIncomeSource, sourceKey, sourceLabel, row.amount);
     }
     if (isExpense(row.type)) {
       expensesMinor += row.amount;
@@ -190,6 +194,7 @@ export function computeMonthlyFinanceSummary(input: {
     byCategory: sortBuckets(byCategory),
     byScope: sortBuckets(byScope),
     byFixedVariable: sortBuckets(byFixedVariable),
+    byIncomeSource: sortBuckets(byIncomeSource),
     budget,
     budgetTotalMinor,
     budgetActualMinor,

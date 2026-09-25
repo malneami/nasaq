@@ -15,6 +15,7 @@ export type MonthlyFinanceSummary = {
   byCategory: MoneyBucket[];
   byScope: MoneyBucket[];
   byFixedVariable: MoneyBucket[];
+  byIncomeSource: MoneyBucket[];
   budget: {
     categoryId: string | null;
     categoryName: string;

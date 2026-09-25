@@ -960,6 +960,15 @@
         "ventures": "How much have I spent on ventures?",
         "monthEnd": "What is my expected month-end spend?"
       }
+    },
+    "incomeStreams": {
+      "title": "Income vs expenses",
+      "income": "Income",
+      "expenses": "Expenses",
+      "surplus": "Surplus",
+      "deficit": "Deficit",
+      "bySource": "Income sources",
+      "noIncome": "No income recorded this month."
     }
   },
   "review": {
