@@ -29,7 +29,7 @@ services:
     env_file:
       - ./.env.base44-defaults
       - /run/base44/app.env
-    command: npx next dev -H 0.0.0.0 -p 3000
+    command: sh /app/scripts/supabase-pooler-entrypoint.sh npx next dev -H 0.0.0.0 -p 3000
     restart: unless-stopped
 
 volumes:
