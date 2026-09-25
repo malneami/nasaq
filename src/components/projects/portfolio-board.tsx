@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { LifeAreaBadge } from '@/components/life-areas';
 import { ConfirmDialog } from '@/components/projects/confirm-dialog';
+import { TimelineView } from '@/components/projects/timeline-view';
 import {
   PROJECT_STATE_TONES,
   RISK_LEVEL_TONES,
@@ -15,6 +16,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { listLifeAreaRows } from '@/lib/life-areas/actions';
 import {
+  batchArchiveProjects,
+  batchChangeProjectState,
   changeProjectState,
   createProjectRow,
   getPortfolioMeta,
@@ -51,6 +54,11 @@ export function PortfolioBoard() {
     activeCount: number;
     activeLimit: number;
   } | null>(null);
+  const [viewMode, setViewMode] = useState<'board' | 'timeline'>('board');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [batchPending, setBatchPending] = useState(false);
 
   const cardsQuery = useQuery({
     queryKey: PROJECTS_KEY,
@@ -81,6 +89,7 @@ export function PortfolioBoard() {
   });
 
   const filtered = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
     const rows = (cardsQuery.data ?? []).filter((card) => {
       if (
         lifeAreaFilter !== 'all' &&
@@ -100,6 +109,15 @@ export function PortfolioBoard() {
       if (nextActionFilter === 'needs' && card.nextAction) {
         return false;
       }
+      if (q) {
+        const haystack = [card.name, card.nextAction, card.currentMilestoneTitle]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+        if (!haystack.includes(q)) {
+          return false;
+        }
+      }
       return true;
     });
     return [...rows].sort((a, b) => {
@@ -113,7 +131,18 @@ export function PortfolioBoard() {
       }
       return b.updatedAt.localeCompare(a.updatedAt);
     });
-  }, [cardsQuery.data, lifeAreaFilter, stageFilter, riskFilter, nextActionFilter, sort]);
+  }, [cardsQuery.data, lifeAreaFilter, stageFilter, riskFilter, nextActionFilter, sort, searchQuery]);
+
+  const stats = useMemo(() => {
+    const total = filtered.length;
+    const active = filtered.filter((c) => c.state === 'active').length;
+    const atRisk = filtered.filter((c) => c.riskLevel === 'high').length;
+    const avgProgress =
+      total > 0
+        ? Math.round(filtered.reduce((sum, c) => sum + c.progress, 0) / total)
+        : 0;
+    return { total, active, atRisk, avgProgress };
+  }, [filtered]);
 
   const areas = areasQuery.data ?? [];
   const areaById = new Map(areas.map((area) => [area.id, area]));
@@ -180,6 +209,45 @@ export function PortfolioBoard() {
     await refresh();
   }
 
+  async function onBatchState(state: ProjectState) {
+    if (selectedIds.size === 0) {
+      return;
+    }
+    setBatchPending(true);
+    const result = await batchChangeProjectState({
+      projectIds: [...selectedIds],
+      state,
+    });
+    setBatchPending(false);
+    if (result.error) {
+      toast.error(t('saveFailed'));
+      return;
+    }
+    toast.success(t('saved'));
+    setSelectedIds(new Set());
+    setSelectionMode(false);
+    await refresh();
+  }
+
+  async function onBatchArchive() {
+    if (selectedIds.size === 0) {
+      return;
+    }
+    setBatchPending(true);
+    const result = await batchArchiveProjects({
+      projectIds: [...selectedIds],
+    });
+    setBatchPending(false);
+    if (result.error) {
+      toast.error(t('saveFailed'));
+      return;
+    }
+    toast.success(t('saved'));
+    setSelectedIds(new Set());
+    setSelectionMode(false);
+    await refresh();
+  }
+
   const capacityTone =
     activeCount > activeLimit
       ? 'text-rose-700 dark:text-rose-300'
@@ -189,14 +257,79 @@ export function PortfolioBoard() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className={cn('text-sm font-medium', capacityTone)}>
-          {t('capacity', { count: activeCount, limit: activeLimit })}
-        </p>
-        <Button type="button" size="sm" onClick={() => setCreating((v) => !v)}>
-          {t('create')}
-        </Button>
+      {/* Stats strip */}
+      <div className="flex flex-wrap gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+        <span className="text-xs font-medium">
+          {t('statsTotal', { count: stats.total })}
+        </span>
+        <span className="text-xs text-muted-foreground">·</span>
+        <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+          {t('statsActive', { count: stats.active })}
+        </span>
+        <span className="text-xs text-muted-foreground">·</span>
+        <span className="text-xs font-medium">
+          {t('statsProgress', { value: stats.avgProgress })}
+        </span>
+        <span className="text-xs text-muted-foreground">·</span>
+        <span className="text-xs font-medium text-rose-700 dark:text-rose-300">
+          {t('statsAtRisk', { count: stats.atRisk })}
+        </span>
       </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <p className={cn('text-sm font-medium', capacityTone)}>
+            {t('capacity', { count: activeCount, limit: activeLimit })}
+          </p>
+          {/* View toggle */}
+          <div className="flex gap-0.5 rounded-lg border border-border p-0.5">
+            <button
+              type="button"
+              className={cn(
+                'rounded-md px-2.5 py-1 text-xs font-medium',
+                viewMode === 'board' ? 'bg-muted' : 'text-muted-foreground',
+              )}
+              onClick={() => setViewMode('board')}
+            >
+              {t('viewBoard')}
+            </button>
+            <button
+              type="button"
+              className={cn(
+                'rounded-md px-2.5 py-1 text-xs font-medium',
+                viewMode === 'timeline' ? 'bg-muted' : 'text-muted-foreground',
+              )}
+              onClick={() => setViewMode('timeline')}
+            >
+              {t('viewTimeline')}
+            </button>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant={selectionMode ? 'default' : 'outline'}
+            onClick={() => {
+              setSelectionMode((v) => !v);
+              setSelectedIds(new Set());
+            }}
+          >
+            {selectionMode ? t('cancelSelection') : t('select')}
+          </Button>
+          <Button type="button" size="sm" onClick={() => setCreating((v) => !v)}>
+            {t('create')}
+          </Button>
+        </div>
+      </div>
+
+      {/* Search */}
+      <Input
+        value={searchQuery}
+        placeholder={t('searchPlaceholder')}
+        onChange={(event) => setSearchQuery(event.target.value)}
+        className="max-w-sm"
+      />
 
       {creating ? (
         <div className="flex gap-2">
@@ -211,6 +344,57 @@ export function PortfolioBoard() {
         </div>
       ) : null}
 
+      {/* Batch action bar */}
+      {selectionMode && selectedIds.size > 0 ? (
+        <div className="sticky bottom-4 z-10 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-background p-3 shadow-lg">
+          <span className="text-sm font-medium">
+            {t('selectedCount', { count: selectedIds.size })}
+          </span>
+          <select
+            className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm dark:bg-input/30"
+            defaultValue=""
+            onChange={(event) => {
+              const state = event.target.value as ProjectState;
+              if (state) {
+                void onBatchState(state);
+                event.target.value = '';
+              }
+            }}
+            disabled={batchPending}
+          >
+            <option value="" disabled>
+              {t('batchChangeState')}
+            </option>
+            {(['active', 'maintain', 'waiting', 'incubator', 'someday', 'completed', 'stopped'] as ProjectState[]).map((s) => (
+              <option key={s} value={s}>
+                {t(`states.${s}`)}
+              </option>
+            ))}
+          </select>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={batchPending}
+            onClick={() => void onBatchArchive()}
+          >
+            {t('batchArchive')}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() => setSelectedIds(new Set())}
+          >
+            {t('clearSelection')}
+          </Button>
+        </div>
+      ) : null}
+
+      {viewMode === 'timeline' ? (
+        <TimelineView projects={filtered} />
+      ) : (
+        <>
       <div className="flex flex-wrap gap-2">
         <select
           className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm dark:bg-input/30"
@@ -302,6 +486,19 @@ export function PortfolioBoard() {
                       card={card}
                       areaById={areaById}
                       onDragStart={() => setDraggingId(card.id)}
+                      selectionMode={selectionMode}
+                      selected={selectedIds.has(card.id)}
+                      onToggleSelect={() =>
+                        setSelectedIds((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(card.id)) {
+                            next.delete(card.id);
+                          } else {
+                            next.add(card.id);
+                          }
+                          return next;
+                        })
+                      }
                     />
                   ))}
               </ul>
@@ -346,6 +543,19 @@ export function PortfolioBoard() {
                         card={card}
                         areaById={areaById}
                         onDragStart={() => setDraggingId(card.id)}
+                        selectionMode={selectionMode}
+                        selected={selectedIds.has(card.id)}
+                        onToggleSelect={() =>
+                          setSelectedIds((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(card.id)) {
+                              next.delete(card.id);
+                            } else {
+                              next.add(card.id);
+                            }
+                            return next;
+                          })
+                        }
                       />
                     ))}
                 </ul>
@@ -354,6 +564,8 @@ export function PortfolioBoard() {
           </div>
         ) : null}
       </section>
+        </>
+      )}
 
       <ConfirmDialog
         open={Boolean(confirm)}
@@ -379,6 +591,9 @@ function PortfolioCard({
   card,
   areaById,
   onDragStart,
+  selectionMode,
+  selected,
+  onToggleSelect,
 }: {
   card: ProjectCardDto;
   areaById: Map<
@@ -386,68 +601,86 @@ function PortfolioCard({
     { id: string; name: string; color: string | null; icon: string | null; archivedAt: string | null }
   >;
   onDragStart: () => void;
+  selectionMode: boolean;
+  selected: boolean;
+  onToggleSelect: () => void;
 }) {
   const t = useTranslations('projects');
 
   return (
     <li
-      draggable
-      onDragStart={onDragStart}
-      className="rounded-lg border border-border bg-card p-3"
+      draggable={!selectionMode}
+      onDragStart={selectionMode ? undefined : onDragStart}
+      className={cn(
+        'rounded-lg border border-border bg-card p-3',
+        selected && 'ring-2 ring-ring',
+      )}
     >
-      <Link href={`/projects/${card.id}`} className="block text-start">
-        <div className="flex items-start justify-between gap-2">
-          <p className="font-medium">{card.name}</p>
-          {card.score !== null ? (
-            <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[11px] font-medium">
-              {card.score}
-            </span>
-          ) : null}
-        </div>
-        <div className="mt-1 flex flex-wrap gap-1">
-          {card.lifeAreaIds.map((id) => {
-            const area = areaById.get(id);
-            if (!area) {
-              return null;
-            }
-            return (
-              <LifeAreaBadge
-                key={id}
-                name={area.name}
-                color={area.color}
-                icon={area.icon}
-                archived={Boolean(area.archivedAt)}
-              />
-            );
-          })}
-        </div>
-        <div className="mt-2 flex flex-wrap gap-1">
-          <StatusPill
-            label={t(`stages.${card.stage}`)}
-            tone={PROJECT_STATE_TONES[card.state]}
+      {selectionMode ? (
+        <label className="flex cursor-pointer items-center gap-2">
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={onToggleSelect}
+            className="h-4 w-4 rounded border-border"
           />
-          <StatusPill
-            label={t(`risk.${card.riskLevel}`)}
-            tone={RISK_LEVEL_TONES[card.riskLevel]}
-          />
-        </div>
-        <p className="mt-2 text-xs text-muted-foreground">
-          {t('progressPct', { value: card.progress })}
-          {card.currentMilestoneTitle
-            ? ` · ${card.currentMilestoneTitle}`
-            : ''}
-        </p>
-        {card.nextAction ? (
-          <p className="mt-1 truncate text-xs">{card.nextAction}</p>
-        ) : (
-          <p className="mt-1 text-xs font-medium text-rose-700 dark:text-rose-300">
-            {t('noNextAction')}
+          <span className="font-medium">{card.name}</span>
+        </label>
+      ) : (
+        <Link href={`/projects/${card.id}`} className="block text-start">
+          <div className="flex items-start justify-between gap-2">
+            <p className="font-medium">{card.name}</p>
+            {card.score !== null ? (
+              <span className="rounded-full bg-secondary px-1.5 py-0.5 text-[11px] font-medium">
+                {card.score}
+              </span>
+            ) : null}
+          </div>
+          <div className="mt-1 flex flex-wrap gap-1">
+            {card.lifeAreaIds.map((id) => {
+              const area = areaById.get(id);
+              if (!area) {
+                return null;
+              }
+              return (
+                <LifeAreaBadge
+                  key={id}
+                  name={area.name}
+                  color={area.color}
+                  icon={area.icon}
+                  archived={Boolean(area.archivedAt)}
+                />
+              );
+            })}
+          </div>
+          <div className="mt-2 flex flex-wrap gap-1">
+            <StatusPill
+              label={t(`stages.${card.stage}`)}
+              tone={PROJECT_STATE_TONES[card.state]}
+            />
+            <StatusPill
+              label={t(`risk.${card.riskLevel}`)}
+              tone={RISK_LEVEL_TONES[card.riskLevel]}
+            />
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {t('progressPct', { value: card.progress })}
+            {card.currentMilestoneTitle
+              ? ` · ${card.currentMilestoneTitle}`
+              : ''}
           </p>
-        )}
-        <p className="mt-1 text-[11px] text-muted-foreground">
-          {t('daysAgo', { count: card.daysSinceUpdated })}
-        </p>
-      </Link>
+          {card.nextAction ? (
+            <p className="mt-1 truncate text-xs">{card.nextAction}</p>
+          ) : (
+            <p className="mt-1 text-xs font-medium text-rose-700 dark:text-rose-300">
+              {t('noNextAction')}
+            </p>
+          )}
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            {t('daysAgo', { count: card.daysSinceUpdated })}
+          </p>
+        </Link>
+      )}
     </li>
   );
 }

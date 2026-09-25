@@ -12,4 +12,5 @@ export * from './inbox';
 export * from './finance';
 export * from './reviews';
 export * from './system';
+export * from './project-notes';
 export * from './junctions';

@@ -388,14 +388,39 @@
     "benefit": "فائدة",
     "stagesSettingsTitle": "مراحل المشروع",
     "stagesSettingsHint": "أعد ترتيب المسار. المشاريع الجديدة تبدأ من الفكرة.",
+    "viewBoard": "لوحة",
+    "viewTimeline": "الجدول الزمني",
+    "searchPlaceholder": "ابحث عن المشاريع…",
+    "select": "تحديد",
+    "cancelSelection": "إلغاء",
+    "selectedCount": "{count} محدد",
+    "batchChangeState": "تغيير الحالة…",
+    "batchArchive": "أرشفة",
+    "clearSelection": "مسح",
+    "statsTotal": "{count} مشروع",
+    "statsActive": "{count} نشط",
+    "statsProgress": "{value}% متوسط التقدم",
+    "statsAtRisk": "{count} معرض للمخاطر",
+    "timelineEmpty": "لا مشاريع بتواريخ مستهدفة. حدّد تاريخاً مستهدفاً لتظهر على الجدول الزمني.",
+    "noSubtasks": "لا مهام فرعية بعد.",
+    "subtaskPlaceholder": "عنوان المهمة الفرعية",
+    "addSubtask": "إضافة مهمة فرعية",
+    "noteTitlePlaceholder": "عنوان الملاحظة",
+    "noteBodyPlaceholder": "اكتب ملاحظتك…",
+    "addNote": "إضافة ملاحظة",
+    "noNotes": "لا ملاحظات بعد.",
+    "noActivity": "لا نشاط مسجّل بعد.",
+    "edit": "تعديل",
     "tabs": {
       "identity": "الهوية",
       "progress": "التقدم",
       "execution": "التنفيذ",
+      "notes": "ملاحظات",
       "people": "الأشخاص",
       "resources": "الموارد",
       "risk": "المخاطر",
-      "score": "الدرجة"
+      "score": "الدرجة",
+      "activity": "النشاط"
     },
     "states": {
       "active": "نشط",
@@ -960,6 +985,15 @@
         "ventures": "كم أنفقت على المشاريع؟",
         "monthEnd": "ما إنفاق نهاية الشهر المتوقع؟"
       }
+    },
+    "incomeStreams": {
+      "title": "الدخل مقابل المصروفات",
+      "income": "الدخل",
+      "expenses": "المصروفات",
+      "surplus": "الفائض",
+      "deficit": "العجز",
+      "bySource": "مصادر الدخل",
+      "noIncome": "لا دخل مسجّل هذا الشهر."
     }
   },
   "review": {
@@ -1166,5 +1200,23 @@
       "unauthenticated": "سجّل الدخول أولاً.",
       "database": "قاعدة البيانات غير متصلة. ضع DATABASE_URL في .env.local من رابط Postgres في Supabase (Project Settings → Database) ثم أعد تشغيل التطبيق."
     }
+  },
+  "quickAdd": {
+    "label": "إضافة سريعة",
+    "addTask": "إضافة مهمة",
+    "addNote": "إضافة ملاحظة",
+    "taskTitle": "مهمة جديدة",
+    "noteTitle": "ملاحظة جديدة",
+    "taskHint": "اكتب عنوان المهمة. ستُضاف إلى إجراءاتك التالية.",
+    "noteHint": "اكتب ملاحظة سريعة. ستُحفظ في صندوق الوارد.",
+    "taskPlaceholder": "مثال: الاتصال بالبنك بخصوص الرهن العقاري",
+    "notePlaceholder": "مثال: فكرة اجتماع — صيغة المراجعة الفصلية",
+    "cancel": "إلغاء",
+    "submit": "حفظ",
+    "close": "إغلاق",
+    "taskAdded": "أُضيفت المهمة إلى إجراءاتك التالية.",
+    "taskFailed": "تعذّرت إضافة المهمة.",
+    "noteAdded": "حُفظت الملاحظة في صندوق الوارد.",
+    "noteFailed": "تعذّر حفظ الملاحظة."
   }
 }

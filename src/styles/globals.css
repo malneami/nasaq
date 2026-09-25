@@ -60,9 +60,10 @@
 }
 
 /*
-  Nasaq brand platform 2026
+  Nasaq brand platform 2026 — Sage Bento
   Ink Navy #0A1022 · Nasaq Navy #172B5D · Focus Orange #F3A52F
   Balance Sage #5A9A82 · Warm Sand #D9D2C3 · Nasaq Mist #E8EDF5
+  Bento surfaces: warm white #FFFDF9 · sage tint #DCE5D7 · sand #E8E0D5
   Motif: the path shows direction; the orange focus dot marks priority.
 */
 :root {
@@ -72,38 +73,38 @@
   --sage: #5a9a82;
   --sand: #d9d2c3;
   --mist: #e8edf5;
-  --background: #f7f5f1;
-  --foreground: #0a1022;
-  --card: #ffffff;
-  --card-foreground: #0a1022;
-  --popover: #ffffff;
-  --popover-foreground: #0a1022;
+  --background: #f5f3ef;
+  --foreground: #25392f;
+  --card: #fffdf9;
+  --card-foreground: #25392f;
+  --popover: #fffdf9;
+  --popover-foreground: #25392f;
   --primary: #172b5d;
-  --primary-foreground: #f7f5f1;
-  --secondary: #e8edf5;
-  --secondary-foreground: #172b5d;
+  --primary-foreground: #fffdf9;
+  --secondary: #e8e0d5;
+  --secondary-foreground: #25392f;
   --muted: #efece6;
   --muted-foreground: #5a6478;
   --accent: #f3a52f;
-  --accent-foreground: #0a1022;
+  --accent-foreground: #25392f;
   --destructive: #b42318;
-  --border: color-mix(in srgb, #d9d2c3 72%, #e8edf5);
-  --input: color-mix(in srgb, #d9d2c3 72%, #e8edf5);
-  --ring: #f3a52f;
-  --chart-1: #172b5d;
+  --border: rgba(88, 117, 88, 0.16);
+  --input: rgba(88, 117, 88, 0.16);
+  --ring: #5a9a82;
+  --chart-1: #5a9a82;
   --chart-2: #f3a52f;
-  --chart-3: #5a9a82;
+  --chart-3: #172b5d;
   --chart-4: #8a9bc4;
-  --chart-5: #0a1022;
-  --radius: 0.75rem;
+  --chart-5: #d9d2c3;
+  --radius: 0.875rem;
   --sidebar: #eef1f7;
-  --sidebar-foreground: #0a1022;
+  --sidebar-foreground: #25392f;
   --sidebar-primary: #172b5d;
-  --sidebar-primary-foreground: #f7f5f1;
-  --sidebar-accent: #e0e7f4;
-  --sidebar-accent-foreground: #172b5d;
-  --sidebar-border: color-mix(in srgb, #d9d2c3 55%, #e8edf5);
-  --sidebar-ring: #f3a52f;
+  --sidebar-primary-foreground: #fffdf9;
+  --sidebar-accent: #dce5d7;
+  --sidebar-accent-foreground: #25392f;
+  --sidebar-border: rgba(88, 117, 88, 0.12);
+  --sidebar-ring: #5a9a82;
 }
 
 .dark {
@@ -113,37 +114,37 @@
   --sage: #5a9a82;
   --sand: #d9d2c3;
   --mist: #e8edf5;
-  --background: #0a1022;
+  --background: #0d1410;
   --foreground: #e8edf5;
-  --card: #10182c;
+  --card: #131c16;
   --card-foreground: #e8edf5;
-  --popover: #10182c;
+  --popover: #131c16;
   --popover-foreground: #e8edf5;
   --primary: #3d5a9c;
   --primary-foreground: #f7f5f1;
-  --secondary: #152038;
+  --secondary: #1a2620;
   --secondary-foreground: #e8edf5;
-  --muted: #152038;
+  --muted: #1a2620;
   --muted-foreground: #a8b0c4;
   --accent: #f3a52f;
   --accent-foreground: #0a1022;
   --destructive: #f04438;
-  --border: rgb(232 237 245 / 12%);
-  --input: rgb(232 237 245 / 14%);
-  --ring: #f3a52f;
-  --chart-1: #3d5a9c;
+  --border: rgba(88, 117, 88, 0.12);
+  --input: rgba(232, 237, 245, 0.14);
+  --ring: #5a9a82;
+  --chart-1: #5a9a82;
   --chart-2: #f3a52f;
-  --chart-3: #5a9a82;
+  --chart-3: #3d5a9c;
   --chart-4: #8a9bc4;
   --chart-5: #e8edf5;
   --sidebar: #070c18;
   --sidebar-foreground: #e8edf5;
   --sidebar-primary: #f3a52f;
   --sidebar-primary-foreground: #0a1022;
-  --sidebar-accent: #152038;
+  --sidebar-accent: #1a2620;
   --sidebar-accent-foreground: #e8edf5;
-  --sidebar-border: rgb(232 237 245 / 8%);
-  --sidebar-ring: #f3a52f;
+  --sidebar-border: rgba(232, 237, 245, 0.08);
+  --sidebar-ring: #5a9a82;
 }
 
 html[dir='rtl'] {
@@ -182,5 +183,87 @@ html[dir='rtl'] {
     border-radius: 9999px;
     background: var(--accent);
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+
+  /* Bento card — rounded-3xl, sage-tinted border, soft layered shadow */
+  .bento-card {
+    border-radius: var(--radius-3xl);
+    border: 1px solid rgba(88, 117, 88, 0.16);
+    box-shadow: 0 14px 36px rgba(54, 69, 52, 0.08),
+      0 2px 7px rgba(54, 69, 52, 0.04);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+
+  .bento-card:hover {
+    box-shadow: 0 20px 48px rgba(54, 69, 52, 0.12),
+      0 4px 10px rgba(54, 69, 52, 0.06);
+    transform: translateY(-2px);
+  }
+
+  .bento-card:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--sage);
+  }
+
+  /* Bento entrance animation — stagger-fade-in */
+  .bento-enter {
+    animation: arrive 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  /* Bento bar grow animation */
+  .bento-bar-grow {
+    transform-origin: bottom;
+    animation: grow 1.05s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  /* Organic blob background shape */
+  .bento-blob {
+    position: absolute;
+    z-index: 0;
+    border-radius: 48% 52% 62% 38%;
+    opacity: 0.55;
+    animation: drift 14s ease-in-out infinite alternate;
+    pointer-events: none;
+  }
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes grow {
+  from {
+    transform: scaleY(0.1);
+    opacity: 0.3;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes drift {
+  from {
+    transform: rotate(-9deg) scale(0.96);
+  }
+  to {
+    transform: rotate(9deg) scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -77,10 +77,10 @@ export function Sidebar() {
               aria-current={isActive ? 'page' : undefined}
               aria-label={label}
               className={cn(
-                'relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors',
+                'relative flex items-center gap-2.5 rounded-2xl px-2.5 py-2 text-sm transition-colors',
                 collapsed && 'justify-center px-0',
                 isActive
-                  ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground before:absolute before:inset-y-1.5 before:start-0 before:w-0.5 before:rounded-full before:bg-accent'
+                  ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground before:absolute before:inset-y-1.5 before:start-0 before:w-1 before:rounded-full before:bg-sage'
                   : 'text-muted-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-foreground',
               )}
             >
@@ -116,7 +116,7 @@ export function Sidebar() {
               aria-label={settingsLabel}
               aria-current={settingsActive ? 'page' : undefined}
               className={cn(
-                'relative flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-colors',
+                'relative flex items-center gap-2.5 rounded-2xl px-2.5 py-2 text-sm transition-colors',
                 collapsed && 'justify-center px-0',
                 settingsActive
                   ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'

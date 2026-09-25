@@ -29,7 +29,7 @@ export async function TodayFollowUps({ items }: { items: TodayFollowUpItem[] }) 
           <li key={item.id}>
             <Link
               href={followUpHref(item.href)}
-              className="block rounded-lg border border-border/70 px-3 py-2 text-start hover:bg-muted/40"
+              className="bento-card block px-3 py-2.5 text-start hover:bg-muted/40"
             >
               <div className="flex items-start justify-between gap-3">
                 <p className="font-medium">{item.personName}</p>

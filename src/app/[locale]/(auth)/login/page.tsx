@@ -8,14 +8,8 @@ export async function generateMetadata() {
   return { title: t('title') };
 }
 
-export default async function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string | string[] }>;
-}) {
+export default async function LoginPage() {
   const t = await getTranslations('auth');
-  const params = await searchParams;
-  const error = Array.isArray(params.error) ? params.error[0] : params.error;
 
   return (
     <div className="space-y-6">
@@ -31,7 +25,7 @@ export default async function LoginPage({
           <ThemeToggle />
         </div>
       </div>
-      <LoginForm oauthError={error === 'oauth'} />
+      <LoginForm />
     </div>
   );
 }

@@ -388,14 +388,39 @@
     "benefit": "benefit",
     "stagesSettingsTitle": "Project stages",
     "stagesSettingsHint": "Reorder the pipeline. New projects still start at idea.",
+    "viewBoard": "Board",
+    "viewTimeline": "Timeline",
+    "searchPlaceholder": "Search projects…",
+    "select": "Select",
+    "cancelSelection": "Cancel",
+    "selectedCount": "{count} selected",
+    "batchChangeState": "Change state…",
+    "batchArchive": "Archive",
+    "clearSelection": "Clear",
+    "statsTotal": "{count} projects",
+    "statsActive": "{count} active",
+    "statsProgress": "{value}% avg progress",
+    "statsAtRisk": "{count} at risk",
+    "timelineEmpty": "No projects with target dates. Set a target date to see them on the timeline.",
+    "noSubtasks": "No subtasks yet.",
+    "subtaskPlaceholder": "Subtask title",
+    "addSubtask": "Add subtask",
+    "noteTitlePlaceholder": "Note title",
+    "noteBodyPlaceholder": "Write your note…",
+    "addNote": "Add note",
+    "noNotes": "No notes yet.",
+    "noActivity": "No activity recorded yet.",
+    "edit": "Edit",
     "tabs": {
       "identity": "Identity",
       "progress": "Progress",
       "execution": "Execution",
+      "notes": "Notes",
       "people": "People",
       "resources": "Resources",
       "risk": "Risk",
-      "score": "Score"
+      "score": "Score",
+      "activity": "Activity"
     },
     "states": {
       "active": "Active",
@@ -960,6 +985,15 @@
         "ventures": "How much have I spent on ventures?",
         "monthEnd": "What is my expected month-end spend?"
       }
+    },
+    "incomeStreams": {
+      "title": "Income vs expenses",
+      "income": "Income",
+      "expenses": "Expenses",
+      "surplus": "Surplus",
+      "deficit": "Deficit",
+      "bySource": "Income sources",
+      "noIncome": "No income recorded this month."
     }
   },
   "review": {
@@ -1166,5 +1200,23 @@
       "unauthenticated": "Sign in first.",
       "database": "Database is not connected. Set DATABASE_URL in .env.local to your Supabase Postgres URI (Project Settings → Database), then restart the app."
     }
+  },
+  "quickAdd": {
+    "label": "Quick add",
+    "addTask": "Add task",
+    "addNote": "Add note",
+    "taskTitle": "New task",
+    "noteTitle": "New note",
+    "taskHint": "Type a task title. It will be added to your next actions.",
+    "noteHint": "Type a quick note. It will be captured to your inbox.",
+    "taskPlaceholder": "e.g. Call the bank about the mortgage",
+    "notePlaceholder": "e.g. Meeting idea — quarterly review format",
+    "cancel": "Cancel",
+    "submit": "Save",
+    "close": "Close",
+    "taskAdded": "Task added to your next actions.",
+    "taskFailed": "Could not add the task.",
+    "noteAdded": "Note captured to your inbox.",
+    "noteFailed": "Could not capture the note."
   }
 }

@@ -11,7 +11,10 @@ import { formatMoney } from '@/lib/money';
 import type { AppLocale } from '@/lib/i18n/routing';
 import { daysInMonth } from '@/lib/finance/intelligence/summary';
 import { MoneyBars, TrendBars } from '@/components/finance/money-bars';
+import { IncomeStreams } from '@/components/finance/income-streams';
 import { Button } from '@/components/ui/button';
+
+const TILE_BG = ['#fffdf9', '#e8e0d5', '#dce5d7', '#f0e9df'];
 
 function monthEnd(monthYmd: string) {
   const d = daysInMonth(monthYmd);
@@ -107,8 +110,12 @@ export function FinanceDashboard({
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="space-y-6">
+      {/* Month navigation — bento toolbar */}
+      <div
+        className="bento-card bento-enter flex flex-wrap items-center justify-between gap-3 p-4"
+        style={{ animationDelay: '0.08s' }}
+      >
         <div className="flex items-center gap-2">
           <Button
             type="button"
@@ -137,8 +144,12 @@ export function FinanceDashboard({
         ) : null}
       </div>
 
+      {/* AI brief — bento tile */}
       {brief ? (
-        <div className="rounded-xl border border-border bg-muted/30 px-4 py-3">
+        <div
+          className="bento-card bento-enter p-4"
+          style={{ animationDelay: '0.16s', background: '#dce5d7' }}
+        >
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t('briefTitle')}
           </p>
@@ -178,12 +189,17 @@ export function FinanceDashboard({
         </div>
       ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {metrics.map((m) => (
+      {/* Metrics — bento tiles with alternating backgrounds */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {metrics.map((m, i) => (
           <button
             key={m.key}
             type="button"
-            className="rounded-xl border border-border px-4 py-3 text-start transition hover:bg-muted/40"
+            className="bento-card bento-enter p-5 text-start transition"
+            style={{
+              animationDelay: `${0.22 + i * 0.08}s`,
+              background: TILE_BG[i],
+            }}
             onClick={() =>
               onOpenTransactions({
                 fromYmd,
@@ -194,16 +210,20 @@ export function FinanceDashboard({
             }
           >
             <p className="text-xs text-muted-foreground">{m.label}</p>
-            <p className="mt-1 text-lg font-semibold tabular-nums">
+            <p className="mt-2 text-xl font-semibold tabular-nums">
               {formatMoney(m.value, currency, locale)}
             </p>
           </button>
         ))}
       </div>
 
+      {/* Category & Scope — bento panels */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <section>
-          <h3 className="mb-3 text-sm font-medium">{t('byCategory')}</h3>
+        <section
+          className="bento-card bento-enter p-5"
+          style={{ animationDelay: '0.52s' }}
+        >
+          <h3 className="mb-4 text-sm font-medium">{t('byCategory')}</h3>
           <MoneyBars
             items={summary.byCategory.slice(0, 8).map((b) => ({
               key: b.key,
@@ -219,8 +239,11 @@ export function FinanceDashboard({
             }))}
           />
         </section>
-        <section>
-          <h3 className="mb-3 text-sm font-medium">{t('byScope')}</h3>
+        <section
+          className="bento-card bento-enter p-5"
+          style={{ animationDelay: '0.6s', background: '#e6ede1' }}
+        >
+          <h3 className="mb-4 text-sm font-medium">{t('byScope')}</h3>
           <MoneyBars
             items={summary.byScope.map((b) => ({
               key: b.key,
@@ -229,7 +252,7 @@ export function FinanceDashboard({
               href: txnHref({ fromYmd, toYmd, scope: b.key }),
             }))}
           />
-          <h3 className="mb-3 mt-6 text-sm font-medium">{t('fixedVariable')}</h3>
+          <h3 className="mb-4 mt-6 text-sm font-medium">{t('fixedVariable')}</h3>
           <MoneyBars
             items={summary.byFixedVariable.map((b) => ({
               key: b.key,
@@ -240,9 +263,13 @@ export function FinanceDashboard({
         </section>
       </div>
 
-      <section>
+      {/* Budget — wide bento panel */}
+      <section
+        className="bento-card bento-enter p-5"
+        style={{ animationDelay: '0.68s' }}
+      >
         <h3 className="mb-2 text-sm font-medium">{t('budgetTitle')}</h3>
-        <p className="mb-3 text-xs text-muted-foreground">
+        <p className="mb-4 text-xs text-muted-foreground">
           {t('projectionNote', {
             days: summary.daysElapsed,
             total: summary.daysInMonth,
@@ -298,7 +325,7 @@ export function FinanceDashboard({
             </table>
           </div>
         )}
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-3 text-sm text-muted-foreground">
           {t('projectedTotal', {
             amount: formatMoney(
               summary.projectedMonthEndMinor,
@@ -309,16 +336,31 @@ export function FinanceDashboard({
         </p>
       </section>
 
-      <section>
-        <h3 className="mb-3 text-sm font-medium">{t('trendTitle')}</h3>
-        <TrendBars
-          items={summary.momTrend.map((row) => ({
-            key: row.monthYmd,
-            label: row.monthYmd.slice(0, 7),
-            value: row.expensesMinor,
-          }))}
-        />
-      </section>
+      {/* Income streams & trend — bottom bento panels */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div style={{ animationDelay: '0.84s' }}>
+          <IncomeStreams
+            incomeMinor={summary.incomeMinor}
+            expensesMinor={summary.expensesMinor}
+            currency={currency}
+            byIncomeSource={summary.byIncomeSource}
+            month={month}
+          />
+        </div>
+        <section
+          className="bento-card bento-enter p-5"
+          style={{ animationDelay: '0.92s', background: '#e6ede1' }}
+        >
+          <h3 className="mb-4 text-sm font-medium">{t('trendTitle')}</h3>
+          <TrendBars
+            items={summary.momTrend.map((row) => ({
+              key: row.monthYmd,
+              label: row.monthYmd.slice(0, 7),
+              value: row.expensesMinor,
+            }))}
+          />
+        </section>
+      </div>
     </div>
   );
 }

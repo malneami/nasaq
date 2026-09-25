@@ -118,3 +118,33 @@ export async function setTaskLifeAreas(
     );
   });
 }
+
+export async function listSubtasks(userId: string, parentTaskId: string) {
+  const id = assertUserId(userId);
+  return getDb()
+    .select()
+    .from(tasks)
+    .where(
+      and(
+        eq(tasks.userId, id),
+        eq(tasks.parentTaskId, parentTaskId),
+        notDeleted(tasks.deletedAt),
+      ),
+    )
+    .orderBy(tasks.sortOrder);
+}
+
+export async function listTasksWithSubtasks(userId: string, projectId: string) {
+  const id = assertUserId(userId);
+  return getDb()
+    .select()
+    .from(tasks)
+    .where(
+      and(
+        eq(tasks.userId, id),
+        eq(tasks.projectId, projectId),
+        notDeleted(tasks.deletedAt),
+      ),
+    )
+    .orderBy(tasks.sortOrder);
+}

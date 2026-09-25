@@ -14,19 +14,19 @@ export async function TodayFinance({ finance }: { finance: TodayFinanceModel }) 
         <p className="text-sm text-muted-foreground">{t('financeEmpty')}</p>
       ) : (
         <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="rounded-lg bg-muted/40 px-3 py-2">
+          <div className="bento-card p-3" style={{ background: '#fffdf9' }}>
             <p className="text-xs text-muted-foreground">{t('spendToday')}</p>
             <p className="mt-1 font-medium">
               {formatMoney(finance.spendingTodayMinor, finance.currency, locale)}
             </p>
           </div>
-          <div className="rounded-lg bg-muted/40 px-3 py-2">
+          <div className="bento-card p-3" style={{ background: '#e8e0d5' }}>
             <p className="text-xs text-muted-foreground">{t('spendMonth')}</p>
             <p className="mt-1 font-medium">
               {formatMoney(finance.spendingMonthMinor, finance.currency, locale)}
             </p>
           </div>
-          <div className="rounded-lg bg-muted/40 px-3 py-2">
+          <div className="bento-card p-3" style={{ background: '#dce5d7' }}>
             <p className="text-xs text-muted-foreground">{t('budgetStatus')}</p>
             <p className="mt-1 font-medium">
               {finance.budgetUsedPercent != null
@@ -34,7 +34,7 @@ export async function TodayFinance({ finance }: { finance: TodayFinanceModel }) 
                 : t('noBudget')}
             </p>
           </div>
-          <div className="rounded-lg bg-muted/40 px-3 py-2">
+          <div className="bento-card p-3" style={{ background: '#f0e9df' }}>
             <p className="text-xs text-muted-foreground">{t('alerts')}</p>
             <p className="mt-1 font-medium">
               {t('alertCounts', {
@@ -44,7 +44,7 @@ export async function TodayFinance({ finance }: { finance: TodayFinanceModel }) 
             </p>
           </div>
           {finance.briefInsight ? (
-            <div className="col-span-2 rounded-lg bg-muted/40 px-3 py-2">
+            <div className="col-span-2 bento-card p-3" style={{ background: '#e6ede1' }}>
               <p className="text-xs text-muted-foreground">{t('briefInsight')}</p>
               <p className="mt-1 text-sm">{finance.briefInsight}</p>
             </div>

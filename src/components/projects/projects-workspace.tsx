@@ -17,7 +17,7 @@ export function ProjectsWorkspace() {
 
   return (
     <div className="space-y-6">
-      <div className="flex gap-1 rounded-lg border border-border p-1">
+      <div className="bento-card flex gap-1 p-1.5">
         <Button
           type="button"
           size="sm"

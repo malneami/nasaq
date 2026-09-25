@@ -123,7 +123,7 @@ export function TodayOutcomes({ initial }: { initial: TodayOutcomesModel }) {
 
   return (
     <TodaySection title={t('outcomesTitle')}>
-      <div className="space-y-4 rounded-xl border border-border bg-card p-4">
+      <div className="bento-card bento-enter space-y-4 p-4" style={{ animationDelay: '0.16s' }}>
         {confirmed.length === 0 && !proposal ? (
           <p className="text-sm text-muted-foreground">{t('outcomesEmpty')}</p>
         ) : null}

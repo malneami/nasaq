@@ -1,0 +1,32 @@
+{
+  "previewPort": 3000,
+  "healthPath": "/en/login",
+  "startCommand": "docker compose -f docker-compose.base44.yml up -d",
+  "secrets": [
+    {
+      "name": "NEXT_PUBLIC_SUPABASE_URL",
+      "description": "Supabase project URL (Supabase dashboard → Project Settings → API → Project URL)",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "description": "Supabase anon/public key (Project Settings → API → Project API keys → anon public)",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "SUPABASE_SERVICE_ROLE_KEY",
+      "description": "Supabase service_role key, server-only (Project Settings → API → Project API keys → service_role)",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "DATABASE_URL",
+      "description": "Postgres connection string for Drizzle (Supabase → Project Settings → Database → connection string)",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "ANTHROPIC_API_KEY",
+      "description": "Anthropic API key for AI features (inbox classification, project recommendations, finance CFO). Optional — only needed when using AI actions.",
+      "requiredAtBoot": false
+    }
+  ]
+}
