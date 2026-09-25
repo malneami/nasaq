@@ -1200,5 +1200,23 @@
       "unauthenticated": "Sign in first.",
       "database": "Database is not connected. Set DATABASE_URL in .env.local to your Supabase Postgres URI (Project Settings → Database), then restart the app."
     }
+  },
+  "quickAdd": {
+    "label": "Quick add",
+    "addTask": "Add task",
+    "addNote": "Add note",
+    "taskTitle": "New task",
+    "noteTitle": "New note",
+    "taskHint": "Type a task title. It will be added to your next actions.",
+    "noteHint": "Type a quick note. It will be captured to your inbox.",
+    "taskPlaceholder": "e.g. Call the bank about the mortgage",
+    "notePlaceholder": "e.g. Meeting idea — quarterly review format",
+    "cancel": "Cancel",
+    "submit": "Save",
+    "close": "Close",
+    "taskAdded": "Task added to your next actions.",
+    "taskFailed": "Could not add the task.",
+    "noteAdded": "Note captured to your inbox.",
+    "noteFailed": "Could not capture the note."
   }
 }
