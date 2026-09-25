@@ -1,0 +1,36 @@
+# Base44 development environment for Nasaq.
+# Runs the Next.js dev server from the cloned source with live reload.
+# Supabase (auth + Postgres) is an external managed service — its credentials
+# are delivered via /run/base44/app.env (see .base44/environment.json).
+services:
+  deps:
+    image: node:22
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - node_modules:/app/node_modules
+    command: npm ci
+    restart: "no"
+
+  web:
+    image: node:22
+    working_dir: /app
+    depends_on:
+      deps:
+        condition: service_completed_successfully
+    volumes:
+      - ./:/app
+      - node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      # Passed through bare so next.config can build allowedDevOrigins.
+      - BASE44_PUBLIC_HOST_SUFFIX
+    env_file:
+      - ./.env.base44-defaults
+      - /run/base44/app.env
+    command: npx next dev -H 0.0.0.0 -p 3000
+    restart: unless-stopped
+
+volumes:
+  node_modules:
