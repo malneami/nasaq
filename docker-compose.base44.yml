@@ -26,6 +26,7 @@ services:
     environment:
       # Passed through bare so next.config can build allowedDevOrigins.
       - BASE44_PUBLIC_HOST_SUFFIX
+      - BASE44_SANDBOX_HOST_DOMAIN
     env_file:
       - ./.env.base44-defaults
       - /run/base44/app.env
