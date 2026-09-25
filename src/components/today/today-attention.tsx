@@ -37,12 +37,12 @@ export async function TodayAttention({ items }: { items: TodayAttentionItem[] })
             <Link
               href={attentionHref(item.href)}
               className={cn(
-                'block rounded-lg border px-3 py-2 text-start',
+                'bento-card block px-3 py-2 text-start',
                 item.tone === 'danger'
-                  ? 'border-destructive/30 bg-destructive/5'
+                  ? 'bg-destructive/5'
                   : item.tone === 'warning'
-                    ? 'border-amber-500/30 bg-amber-500/8'
-                    : 'border-border/70 bg-muted/30',
+                    ? 'bg-amber-500/8'
+                    : 'bg-muted/30',
               )}
             >
               <p className="font-medium">

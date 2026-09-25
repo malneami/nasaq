@@ -13,18 +13,22 @@ export function MoneyBars({
 }) {
   const peak = max ?? Math.max(1, ...items.map((i) => i.value));
   return (
-    <ul className={cn('space-y-2', className)}>
-      {items.map((item) => {
+    <ul className={cn('space-y-2.5', className)}>
+      {items.map((item, i) => {
         const width = Math.max(2, Math.round((item.value / peak) * 100));
         const bar = (
           <div className="min-w-0 flex-1">
-            <div className="mb-0.5 flex justify-between gap-2 text-xs">
+            <div className="mb-1 flex justify-between gap-2 text-xs">
               <span className="truncate text-foreground">{item.label}</span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <div className="h-2.5 overflow-hidden rounded-full bg-muted">
               <div
-                className="h-full rounded-full bg-primary/80 transition-[width]"
-                style={{ width: `${width}%` }}
+                className="bento-bar-grow h-full rounded-full"
+                style={{
+                  width: `${width}%`,
+                  background: 'linear-gradient(90deg, #9db497, #5a9a82)',
+                  animationDelay: `${0.35 + i * 0.07}s`,
+                }}
               />
             </div>
           </div>
@@ -53,14 +57,18 @@ export function TrendBars({
   const peak = Math.max(1, ...items.map((i) => i.value));
   return (
     <div className="flex h-28 items-end gap-2">
-      {items.map((item) => {
+      {items.map((item, i) => {
         const height = Math.max(4, Math.round((item.value / peak) * 100));
         return (
           <div key={item.key} className="flex min-w-0 flex-1 flex-col items-center gap-1">
             <div className="flex h-20 w-full items-end justify-center">
               <div
-                className="w-full max-w-[2.5rem] rounded-t-md bg-accent/80"
-                style={{ height: `${height}%` }}
+                className="bento-bar-grow w-full max-w-[2.5rem] rounded-t-lg"
+                style={{
+                  height: `${height}%`,
+                  background: 'linear-gradient(180deg, #9db497, #6f8c6d)',
+                  animationDelay: `${0.35 + i * 0.07}s`,
+                }}
                 title={String(item.value)}
               />
             </div>

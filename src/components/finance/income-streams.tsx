@@ -33,9 +33,9 @@ export function IncomeStreams({
       <h3 className="text-sm font-medium">{t('title')}</h3>
 
       {/* Income vs expenses comparison bars */}
-      <div className="space-y-3 rounded-xl border border-border px-4 py-3">
+      <div className="bento-card bento-enter space-y-3 p-4" style={{ animationDelay: '0.84s' }}>
         <div>
-          <div className="mb-0.5 flex justify-between gap-2 text-xs">
+          <div className="mb-1 flex justify-between gap-2 text-xs">
             <span className="text-foreground">{t('income')}</span>
             <span className="tabular-nums text-muted-foreground">
               {formatMoney(incomeMinor, currency, locale)}
@@ -43,13 +43,17 @@ export function IncomeStreams({
           </div>
           <div className="h-3 overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full rounded-full bg-emerald-500/80 transition-[width]"
-              style={{ width: `${incomeWidth}%` }}
+              className="bento-bar-grow h-full rounded-full"
+              style={{
+                width: `${incomeWidth}%`,
+                background: 'linear-gradient(90deg, #9db497, #5a9a82)',
+                animationDelay: '0.9s',
+              }}
             />
           </div>
         </div>
         <div>
-          <div className="mb-0.5 flex justify-between gap-2 text-xs">
+          <div className="mb-1 flex justify-between gap-2 text-xs">
             <span className="text-foreground">{t('expenses')}</span>
             <span className="tabular-nums text-muted-foreground">
               {formatMoney(expensesMinor, currency, locale)}
@@ -57,8 +61,12 @@ export function IncomeStreams({
           </div>
           <div className="h-3 overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full rounded-full bg-rose-500/80 transition-[width]"
-              style={{ width: `${expensesWidth}%` }}
+              className="bento-bar-grow h-full rounded-full"
+              style={{
+                width: `${expensesWidth}%`,
+                background: 'linear-gradient(90deg, #e8a87c, #d97757)',
+                animationDelay: '0.96s',
+              }}
             />
           </div>
         </div>

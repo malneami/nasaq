@@ -144,17 +144,17 @@ export function FinanceWorkbench() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-1 border-b border-border pb-px">
+      <div className="bento-card flex flex-wrap gap-1 p-1.5">
         {tabs.map((item) => (
           <button
             key={item.id}
             type="button"
             onClick={() => setTab(item.id)}
             className={cn(
-              'rounded-t-lg px-3 py-2 text-sm font-medium',
+              'rounded-2xl px-3 py-2 text-sm font-medium transition',
               tab === item.id
-                ? 'border border-b-0 border-border bg-background'
-                : 'text-muted-foreground',
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-muted',
             )}
           >
             {item.label}

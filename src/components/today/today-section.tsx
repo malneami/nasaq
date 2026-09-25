@@ -37,7 +37,7 @@ export function TodaySection({
 
 export function TodaySkeleton({ lines = 3 }: { lines?: number }) {
   return (
-    <div className="space-y-2 rounded-xl border border-border/70 p-4">
+    <div className="bento-card space-y-2 p-4">
       {Array.from({ length: lines }).map((_, index) => (
         <div
           key={index}
