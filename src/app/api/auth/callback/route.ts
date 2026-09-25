@@ -22,10 +22,19 @@ function safeNextPath(next: string | null): string {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
   const next = safeNextPath(searchParams.get('next'));
   const locale = next.split('/')[1] ?? routing.defaultLocale;
+
+  // Behind the preview proxy, request.url has the internal sandbox host which
+  // the browser cannot reach. Use x-forwarded-host/proto to build the public
+  // origin that the browser actually navigated to.
+  const forwardedHost = request.headers.get('x-forwarded-host');
+  const forwardedProto = request.headers.get('x-forwarded-proto');
+  const origin = forwardedHost
+    ? `${forwardedProto ?? 'https'}://${forwardedHost}`
+    : new URL(request.url).origin;
   const errorRedirect = `${origin}/${locale}/login?error=oauth`;
 
   if (searchParams.get('error') || !code) {
