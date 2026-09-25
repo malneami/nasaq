@@ -2,7 +2,7 @@
 
 import { requireUserId } from '@/lib/auth/session';
 import { DEFAULT_CURRENCY } from '@/lib/constants';
-import { createAuditLog, listAiRecommendationsForSubject, updateAiRecommendation } from '@/lib/db/queries/system';
+import { createAuditLog, listAiRecommendationsForSubject, listAuditLogsForEntity, updateAiRecommendation } from '@/lib/db/queries/system';
 import { listContacts } from '@/lib/db/queries/contacts';
 import { listGoals } from '@/lib/db/queries/goals';
 import { listLifeAreas } from '@/lib/db/queries/life-areas';
@@ -31,7 +31,13 @@ import {
   setProjectLifeAreas,
   updateProject,
 } from '@/lib/db/queries/projects';
-import { createTask, listTasks } from '@/lib/db/queries/tasks';
+import {
+  createProjectNote,
+  deleteProjectNote,
+  listProjectNotes,
+  updateProjectNote,
+} from '@/lib/db/queries/project-notes';
+import { createTask, getTask, listTasks, listTasksWithSubtasks, updateTask } from '@/lib/db/queries/tasks';
 import { createCommitment, createWaitingItem } from '@/lib/db/queries/commitments';
 import {
   defaultPreferences,
@@ -118,7 +124,7 @@ export type ProjectWorkspaceDto = {
     targetDate: string | null;
     isDone: boolean;
   }[];
-  tasks: { id: string; title: string; status: string }[];
+  tasks: { id: string; title: string; status: string; parentTaskId: string | null; sortOrder: number }[];
   meetings: { id: string; title: string; startsAt: string }[];
   commitments: {
     id: string;
@@ -849,7 +855,7 @@ export async function getProjectWorkspace(projectId: string): Promise<{
       listProjectLifeAreaIds(userId, [project.id]),
       listGoalsForProject(userId, project.id),
       listMilestones(userId, project.id),
-      listTasks(userId, { projectId: project.id }),
+      listTasksWithSubtasks(userId, project.id),
       listProjectMeetings(userId, project.id),
       listProjectCommitments(userId, project.id),
       listProjectWaitingItems(userId, project.id),
@@ -899,6 +905,8 @@ export async function getProjectWorkspace(projectId: string): Promise<{
           id: item.id,
           title: item.title,
           status: item.status,
+          parentTaskId: item.parentTaskId,
+          sortOrder: item.sortOrder,
         })),
         meetings: meetings.map((item) => ({
           id: item.id,
@@ -1037,6 +1045,269 @@ export async function markRecommendationAccepted(
       status: 'accepted',
     });
     return {};
+  } catch (error) {
+    return { error: asError(error) };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Batch actions
+// ---------------------------------------------------------------------------
+
+export async function batchChangeProjectState(input: {
+  projectIds: string[];
+  state: ProjectState;
+}): Promise<{ error?: string; skipped?: string[] }> {
+  try {
+    const userId = await requireUserId();
+    const skipped: string[] = [];
+    for (const projectId of input.projectIds) {
+      const result = await changeProjectState({
+        projectId,
+        state: input.state,
+        confirmOverLimit: true,
+      });
+      if (result.error) {
+        skipped.push(projectId);
+      }
+    }
+    return { skipped };
+  } catch (error) {
+    return { error: asError(error) };
+  }
+}
+
+export async function batchArchiveProjects(input: {
+  projectIds: string[];
+}): Promise<{ error?: string }> {
+  try {
+    const userId = await requireUserId();
+    for (const projectId of input.projectIds) {
+      await deleteProject(userId, projectId);
+      await writeAudit(userId, 'delete', projectId, { deleted: true, batch: true });
+    }
+    return {};
+  } catch (error) {
+    return { error: asError(error) };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Subtasks
+// ---------------------------------------------------------------------------
+
+export async function createSubtask(
+  projectId: string,
+  input: { parentTaskId: string; title: string },
+): Promise<{ error?: string }> {
+  const parsed = quickTaskSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: 'invalid' };
+  }
+  try {
+    const userId = await requireUserId();
+    const existing = await getProject(userId, projectId);
+    if (!existing) {
+      return { error: 'notFound' };
+    }
+    const subtasks = await listTasksWithSubtasks(userId, projectId);
+    const existingSubtasks = subtasks.filter(
+      (t) => t.parentTaskId === input.parentTaskId,
+    );
+    await createTask(userId, {
+      title: parsed.data.title,
+      projectId,
+      parentTaskId: input.parentTaskId,
+      status: 'next',
+      sortOrder: existingSubtasks.length,
+    });
+    await writeAudit(userId, 'subtask_create', projectId, {
+      title: parsed.data.title,
+      parentTaskId: input.parentTaskId,
+    });
+    return {};
+  } catch (error) {
+    return { error: asError(error) };
+  }
+}
+
+export async function toggleSubtaskStatus(
+  projectId: string,
+  input: { taskId: string },
+): Promise<{ error?: string }> {
+  try {
+    const userId = await requireUserId();
+    const existing = await getProject(userId, projectId);
+    if (!existing) {
+      return { error: 'notFound' };
+    }
+    const task = await getTask(userId, input.taskId);
+    if (!task) {
+      return { error: 'notFound' };
+    }
+    const isCompleted = task.status === 'completed';
+    await updateTask(userId, input.taskId, {
+      status: isCompleted ? 'next' : 'completed',
+      completedAt: isCompleted ? null : new Date(),
+    });
+    await writeAudit(userId, 'subtask_toggle', projectId, {
+      taskId: input.taskId,
+      from: task.status,
+      to: isCompleted ? 'next' : 'completed',
+    });
+
+    // Recalculate project progress from subtask completion ratios
+    await recalcProjectProgress(userId, projectId);
+    return {};
+  } catch (error) {
+    return { error: asError(error) };
+  }
+}
+
+async function recalcProjectProgress(userId: string, projectId: string) {
+  const allTasks = await listTasksWithSubtasks(userId, projectId);
+  const parentTasks = allTasks.filter((t) => !t.parentTaskId);
+  if (parentTasks.length === 0) {
+    return;
+  }
+  const subtasksByParent = new Map<string, typeof allTasks>();
+  for (const t of allTasks) {
+    if (!t.parentTaskId) {
+      continue;
+    }
+    const arr = subtasksByParent.get(t.parentTaskId) ?? [];
+    arr.push(t);
+    subtasksByParent.set(t.parentTaskId, arr);
+  }
+
+  let totalCompletion = 0;
+  let count = 0;
+  for (const parent of parentTasks) {
+    const subs = subtasksByParent.get(parent.id);
+    if (subs && subs.length > 0) {
+      const completed = subs.filter((s) => s.status === 'completed').length;
+      totalCompletion += completed / subs.length;
+    } else {
+      totalCompletion += parent.status === 'completed' ? 1 : 0;
+    }
+    count++;
+  }
+
+  if (count > 0) {
+    const progress = Math.round((totalCompletion / count) * 100);
+    await updateProject(userId, projectId, { progress });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Project notes
+// ---------------------------------------------------------------------------
+
+export async function listProjectNotesAction(projectId: string): Promise<{
+  notes?: { id: string; title: string; body: string; updatedAt: string }[];
+  error?: string;
+}> {
+  try {
+    const userId = await requireUserId();
+    const rows = await listProjectNotes(userId, projectId);
+    return {
+      notes: rows.map((row) => ({
+        id: row.id,
+        title: row.title,
+        body: row.body,
+        updatedAt: row.updatedAt.toISOString(),
+      })),
+    };
+  } catch (error) {
+    return { error: asError(error) };
+  }
+}
+
+export async function createProjectNoteAction(
+  projectId: string,
+  input: { title: string; body: string },
+): Promise<{ error?: string }> {
+  try {
+    const userId = await requireUserId();
+    const existing = await getProject(userId, projectId);
+    if (!existing) {
+      return { error: 'notFound' };
+    }
+    await createProjectNote(userId, {
+      projectId,
+      title: input.title.trim() || 'Untitled',
+      body: input.body,
+    });
+    await writeAudit(userId, 'note_create', projectId, { title: input.title });
+    return {};
+  } catch (error) {
+    return { error: asError(error) };
+  }
+}
+
+export async function updateProjectNoteAction(
+  projectId: string,
+  input: { noteId: string; title: string; body: string },
+): Promise<{ error?: string }> {
+  try {
+    const userId = await requireUserId();
+    const existing = await getProject(userId, projectId);
+    if (!existing) {
+      return { error: 'notFound' };
+    }
+    await updateProjectNote(userId, input.noteId, {
+      title: input.title.trim() || 'Untitled',
+      body: input.body,
+    });
+    return {};
+  } catch (error) {
+    return { error: asError(error) };
+  }
+}
+
+export async function deleteProjectNoteAction(
+  projectId: string,
+  noteId: string,
+): Promise<{ error?: string }> {
+  try {
+    const userId = await requireUserId();
+    const existing = await getProject(userId, projectId);
+    if (!existing) {
+      return { error: 'notFound' };
+    }
+    await deleteProjectNote(userId, noteId);
+    return {};
+  } catch (error) {
+    return { error: asError(error) };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Project activity log
+// ---------------------------------------------------------------------------
+
+export async function listProjectActivity(projectId: string): Promise<{
+  activity?: {
+    id: string;
+    actor: string;
+    action: string;
+    after: Record<string, unknown> | null;
+    createdAt: string;
+  }[];
+  error?: string;
+}> {
+  try {
+    const userId = await requireUserId();
+    const rows = await listAuditLogsForEntity(userId, 'project', projectId, 50);
+    return {
+      activity: rows.map((row) => ({
+        id: row.id,
+        actor: row.actor,
+        action: row.action,
+        after: row.after,
+        createdAt: row.createdAt.toISOString(),
+      })),
+    };
   } catch (error) {
     return { error: asError(error) };
   }

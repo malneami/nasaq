@@ -143,3 +143,24 @@ export async function createAuditLog(
     .returning();
   return row;
 }
+
+export async function listAuditLogsForEntity(
+  userId: string,
+  entityType: string,
+  entityId: string,
+  limit = 50,
+) {
+  const id = assertUserId(userId);
+  return getDb()
+    .select()
+    .from(auditLogs)
+    .where(
+      and(
+        eq(auditLogs.userId, id),
+        eq(auditLogs.entityType, entityType),
+        eq(auditLogs.entityId, entityId),
+      ),
+    )
+    .orderBy(desc(auditLogs.createdAt))
+    .limit(limit);
+}

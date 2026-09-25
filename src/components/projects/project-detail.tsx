@@ -6,7 +6,10 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { LifeAreaMultiSelect } from '@/components/life-areas';
+import { ActivityPanel } from '@/components/projects/activity-panel';
 import { ConfirmDialog } from '@/components/projects/confirm-dialog';
+import { NotesPanel } from '@/components/projects/notes-panel';
+import { TaskWithSubtasks } from '@/components/projects/subtask-row';
 import {
   PROJECT_STATE_TONES,
   RISK_LEVEL_TONES,
@@ -66,10 +69,12 @@ const TABS = [
   'identity',
   'progress',
   'execution',
+  'notes',
   'people',
   'resources',
   'risk',
   'score',
+  'activity',
 ] as const;
 
 type Tab = (typeof TABS)[number];
@@ -411,6 +416,7 @@ export function ProjectDetail({ projectId }: { projectId: string }) {
       {tab === 'execution' ? (
         <ExecutionPanel
           workspace={workspace}
+          projectId={projectId}
           onAddTask={async (title) => {
             const result = await addProjectTask(projectId, { title });
             if (result.error) {
@@ -452,6 +458,8 @@ export function ProjectDetail({ projectId }: { projectId: string }) {
           }}
         />
       ) : null}
+
+      {tab === 'notes' ? <NotesPanel projectId={projectId} /> : null}
 
       {tab === 'people' ? (
         <PeoplePanel
@@ -539,6 +547,8 @@ export function ProjectDetail({ projectId }: { projectId: string }) {
           }}
         />
       ) : null}
+
+      {tab === 'activity' ? <ActivityPanel projectId={projectId} /> : null}
 
       <ConfirmDialog
         open={Boolean(confirm)}
@@ -782,6 +792,7 @@ function ProgressForm({
 
 function ExecutionPanel({
   workspace,
+  projectId,
   onAddTask,
   onAddCommitment,
   onAddWaiting,
@@ -789,6 +800,7 @@ function ExecutionPanel({
   onRemoveLink,
 }: {
   workspace: NonNullable<Awaited<ReturnType<typeof getProjectWorkspace>>['workspace']>;
+  projectId: string;
   onAddTask: (title: string) => Promise<void>;
   onAddCommitment: (
     description: string,
@@ -805,18 +817,30 @@ function ExecutionPanel({
   const [url, setUrl] = useState('');
   const [label, setLabel] = useState('');
 
+  const parentTasks = workspace.tasks.filter((t) => !t.parentTaskId);
+  const subtasksByParent = new Map<string, typeof workspace.tasks>();
+  for (const task of workspace.tasks) {
+    if (!task.parentTaskId) continue;
+    const arr = subtasksByParent.get(task.parentTaskId) ?? [];
+    arr.push(task);
+    subtasksByParent.set(task.parentTaskId, arr);
+  }
+
   return (
     <div className="space-y-6">
       <section>
         <h3 className="mb-2 text-sm font-medium">{t('tasks')}</h3>
         <ul className="space-y-1 text-sm">
-          {workspace.tasks.length === 0 ? (
+          {parentTasks.length === 0 ? (
             <li className="text-muted-foreground">{t('noTasks')}</li>
           ) : (
-            workspace.tasks.map((item) => (
-              <li key={item.id} className="rounded-lg border px-3 py-2">
-                {item.title}
-              </li>
+            parentTasks.map((item) => (
+              <TaskWithSubtasks
+                key={item.id}
+                projectId={projectId}
+                task={item}
+                subtasks={subtasksByParent.get(item.id) ?? []}
+              />
             ))
           )}
         </ul>

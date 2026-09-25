@@ -18,6 +18,10 @@ export const tasks = pgTable(
     projectId: uuid('project_id').references(() => projects.id, {
       onDelete: 'set null',
     }),
+    parentTaskId: uuid('parent_task_id').references(() => tasks.id, {
+      onDelete: 'cascade',
+    }),
+    sortOrder: integer('sort_order').notNull().default(0),
     owner: text('owner'),
     priority: taskPriorityEnum('priority').notNull().default('medium'),
     status: taskStatusEnum('status').notNull().default('inbox'),
@@ -35,6 +39,7 @@ export const tasks = pgTable(
     index('tasks_user_status_idx').on(table.userId, table.status),
     index('tasks_project_id_idx').on(table.projectId),
     index('tasks_due_date_idx').on(table.userId, table.dueDate),
+    index('tasks_parent_task_id_idx').on(table.parentTaskId),
   ],
 );
 
