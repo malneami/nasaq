@@ -30,7 +30,9 @@ services:
     env_file:
       - ./.env.base44-defaults
       - /run/base44/app.env
-    command: sh /app/scripts/supabase-pooler-entrypoint.sh npx next dev -H 0.0.0.0 -p 3000
+    # Run the local binary directly so an intentional SIGTERM during a dev-server
+    # restart is not reported by npm as an application error.
+    command: sh /app/scripts/supabase-pooler-entrypoint.sh ./node_modules/.bin/next dev -H 0.0.0.0 -p 3000
     restart: unless-stopped
 
 volumes:
