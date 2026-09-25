@@ -17,6 +17,11 @@ const sandboxWildcard = process.env.BASE44_SANDBOX_HOST_DOMAIN
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ['postgres'],
+  // Makes Next.js add crossorigin="anonymous" to generated <script> tags so the
+  // browser sends an Origin header (sec-fetch-mode: cors) instead of falling
+  // through to the Referer-based cross-site dev check — which fails behind the
+  // preview proxy when no Referer is forwarded.
+  crossOrigin: 'anonymous',
   // Dev assets/HMR (hostname only, no scheme/port) — preview is cross-origin.
   allowedDevOrigins: [...previewOrigin, ...sandboxWildcard],
   // Server Actions CSRF check: the proxy forwards a different Host than the
