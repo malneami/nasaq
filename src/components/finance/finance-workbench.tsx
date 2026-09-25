@@ -18,6 +18,7 @@ import {
   archiveTransaction,
   importCsv,
   importSms,
+  importStatementFile,
   listFinanceAccounts,
   listFinanceBudgets,
   listFinanceCategories,
@@ -32,6 +33,7 @@ import {
 } from '@/lib/finance/actions';
 import { formatMoney } from '@/lib/money';
 import type { AppLocale } from '@/lib/i18n/routing';
+import type { IngestSummary } from '@/lib/finance/types';
 import { ACCOUNT_TYPES, MONEY_SCOPES } from '@/lib/validations/finance';
 import { cn } from '@/lib/utils';
 import { StatusPill } from '@/components/status-pill';
@@ -639,7 +641,7 @@ function ImportPane({
   onDone: () => void;
 }) {
   const t = useTranslations('finance');
-  const [mode, setMode] = useState<'csv' | 'sms'>('csv');
+  const [mode, setMode] = useState<'csv' | 'sms' | 'file'>('csv');
   const [csvText, setCsvText] = useState('');
   const [smsText, setSmsText] = useState('');
   const [dateColumn, setDateColumn] = useState('Date');
@@ -648,22 +650,38 @@ function ImportPane({
   const [accountId, setAccountId] = useState(accounts[0]?.id ?? '');
   const [summary, setSummary] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [dragOver, setDragOver] = useState(false);
 
   async function runImport() {
     setPending(true);
     try {
-      const result =
-        mode === 'csv'
-          ? await importCsv({
-              csvText,
-              dateColumn,
-              amountColumn,
-              merchantColumn,
-              accountId,
-            })
-          : await importSms({ text: smsText, accountId });
+      let result: { summary?: IngestSummary; error?: string };
+      if (mode === 'file') {
+        if (!selectedFile) {
+          toast.error(t('fileRequired'));
+          return;
+        }
+        const base64Data = await fileToBase64(selectedFile);
+        result = await importStatementFile({
+          base64Data,
+          mimeType: selectedFile.type || 'application/octet-stream',
+          fileName: selectedFile.name,
+          accountId,
+        });
+      } else if (mode === 'csv') {
+        result = await importCsv({
+          csvText,
+          dateColumn,
+          amountColumn,
+          merchantColumn,
+          accountId,
+        });
+      } else {
+        result = await importSms({ text: smsText, accountId });
+      }
       if (result.error || !result.summary) {
-        toast.error(t('importFailed'));
+        toast.error(result.error ? t('importError', { error: result.error }) : t('importFailed'));
         return;
       }
       const s = result.summary;
@@ -676,15 +694,34 @@ function ImportPane({
         }),
       );
       toast.success(t('importDone'));
+      setSelectedFile(null);
       onDone();
     } finally {
       setPending(false);
     }
   }
 
+  function fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result.split(',')[1] ?? '');
+      };
+      reader.onerror = () => reject(new Error('Failed to read file.'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function handleFileSelect(files: FileList | null) {
+    if (files && files.length > 0) {
+      setSelectedFile(files[0]);
+    }
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button
           type="button"
           size="sm"
@@ -701,9 +738,21 @@ function ImportPane({
         >
           {t('smsImport')}
         </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={mode === 'file' ? 'default' : 'outline'}
+          onClick={() => setMode('file')}
+        >
+          {t('fileImport')}
+        </Button>
       </div>
       <p className="text-sm text-muted-foreground">
-        {mode === 'csv' ? t('csvHint') : t('smsHint')}
+        {mode === 'csv'
+          ? t('csvHint')
+          : mode === 'sms'
+            ? t('smsHint')
+            : t('fileHint')}
       </p>
       <select
         className={SELECT}
@@ -745,16 +794,83 @@ function ImportPane({
             placeholder={'Date,Amount,Description\n2026-09-01,25.00,Jarir'}
           />
         </>
-      ) : (
+      ) : mode === 'sms' ? (
         <Textarea
           rows={10}
           value={smsText}
           onChange={(e) => setSmsText(e.target.value)}
           placeholder={t('smsPlaceholder')}
         />
+      ) : (
+        <div className="space-y-3">
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => document.getElementById('statement-file-input')?.click()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                document.getElementById('statement-file-input')?.click();
+              }
+            }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragOver(false);
+              handleFileSelect(e.dataTransfer.files);
+            }}
+            className={cn(
+              'flex min-h-[140px] cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-6 text-center transition-colors',
+              dragOver
+                ? 'border-accent bg-accent/5'
+                : 'border-border hover:border-accent/50',
+            )}
+          >
+            <svg
+              className="size-8 text-muted-foreground"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 7.5m0 0L7.5 12M12 7.5v9"
+              />
+            </svg>
+            {selectedFile ? (
+              <div className="space-y-1">
+                <p className="text-sm font-medium">{selectedFile.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {(selectedFile.size / 1024).toFixed(0)} KB · {selectedFile.type || 'unknown'}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                <p className="text-sm font-medium">{t('fileDropHint')}</p>
+                <p className="text-xs text-muted-foreground">{t('fileFormats')}</p>
+              </div>
+            )}
+          </div>
+          <input
+            id="statement-file-input"
+            type="file"
+            className="hidden"
+            accept=".pdf,.csv,.txt,.png,.jpg,.jpeg,.webp,.gif"
+            onChange={(e) => handleFileSelect(e.target.files)}
+          />
+          {pending ? (
+            <p className="text-sm text-accent">{t('fileAnalyzing')}</p>
+          ) : null}
+        </div>
       )}
-      <Button type="button" disabled={pending} onClick={() => void runImport()}>
-        {t('runImport')}
+      <Button type="button" disabled={pending || (mode === 'file' && !selectedFile)} onClick={() => void runImport()}>
+        {pending && mode === 'file' ? t('fileAnalyzing') : t('runImport')}
       </Button>
       {summary ? <p className="text-sm text-muted-foreground">{summary}</p> : null}
     </div>

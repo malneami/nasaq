@@ -960,7 +960,14 @@
         "ventures": "كم أنفقت على المشاريع؟",
         "monthEnd": "ما إنفاق نهاية الشهر المتوقع؟"
       }
-    }
+    },
+    "fileImport": "رفع ملف",
+    "fileHint": "ارفع كشف حساب بنكي (PDF أو CSV أو صورة) وسيقوم الذكاء الاصطناعي باستخراج المعاملات لك.",
+    "fileDropHint": "أفلت الملف هنا أو انقر للتصفح",
+    "fileFormats": "PDF، CSV، TXT، PNG، JPG، WEBP — بحد أقصى ١٠ ميجابايت",
+    "fileAnalyzing": "جارٍ تحليل الكشف…",
+    "fileRequired": "يرجى اختيار ملف أولاً.",
+    "importError": "خطأ في الاستيراد: {error}"
   },
   "review": {
     "tabs": {

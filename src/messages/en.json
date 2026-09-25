@@ -960,7 +960,14 @@
         "ventures": "How much have I spent on ventures?",
         "monthEnd": "What is my expected month-end spend?"
       }
-    }
+    },
+    "fileImport": "File upload",
+    "fileHint": "Upload a bank statement (PDF, CSV, or image) and AI will extract the transactions for you.",
+    "fileDropHint": "Drop a file here or click to browse",
+    "fileFormats": "PDF, CSV, TXT, PNG, JPG, WEBP — max 10 MB",
+    "fileAnalyzing": "Analyzing statement…",
+    "fileRequired": "Please select a file first.",
+    "importError": "Import error: {error}"
   },
   "review": {
     "tabs": {

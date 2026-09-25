@@ -492,6 +492,40 @@ export async function importSms(
   }
 }
 
+export async function importStatementFile(input: {
+  base64Data: string;
+  mimeType: string;
+  fileName: string;
+  accountId?: string;
+}): Promise<{ summary?: IngestSummary; error?: string }> {
+  try {
+    const userId = await requireUserId();
+    const { extractTransactionsFromFile, toNormalizedTxns } = await import(
+      '@/lib/finance/intelligence/statement'
+    );
+    const extracted = await extractTransactionsFromFile({
+      base64Data: input.base64Data,
+      mimeType: input.mimeType,
+      fileName: input.fileName,
+    });
+    const normalized = toNormalizedTxns(
+      extracted,
+      emptyOptional(input.accountId) ?? undefined,
+    );
+    const summary = await ingestNormalized(userId, normalized);
+    await writeAudit(userId, 'import', 'transactions', userId, {
+      adapter: 'file',
+      fileName: input.fileName,
+      imported: summary.imported,
+      duplicates: summary.duplicates,
+      needsReview: summary.needsReview,
+    });
+    return { summary };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : 'failed' };
+  }
+}
+
 export async function listFinanceBudgets(month?: string): Promise<{
   budgets?: BudgetDto[];
   error?: string;
