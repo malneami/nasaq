@@ -4,6 +4,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { User } from '@supabase/supabase-js';
 import { getSupabasePublicEnv } from '@/lib/env';
+import { DEV_COOKIE_NAME, getDevUser } from '@/lib/auth/dev-session';
 
 export async function createClient() {
   const env = getSupabasePublicEnv();
@@ -33,6 +34,12 @@ export async function createClient() {
 }
 
 export async function getCurrentUser(): Promise<User | null> {
+  const cookieStore = await cookies();
+
+  // Dev-only test account bypass
+  const devUser = getDevUser(cookieStore.get(DEV_COOKIE_NAME)?.value);
+  if (devUser) return devUser;
+
   if (!getSupabasePublicEnv()) {
     return null;
   }

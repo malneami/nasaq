@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import type { User } from '@supabase/supabase-js';
 import { getSupabasePublicEnv } from '@/lib/env';
+import { DEV_COOKIE_NAME, getDevUser } from '@/lib/auth/dev-session';
 
 type SessionResult = {
   response: NextResponse;
@@ -41,6 +42,12 @@ export async function updateSession(
   } = await supabase.auth.getUser();
 
   user = authUser;
+
+  // Dev-only test account bypass
+  if (!user) {
+    const devUser = getDevUser(request.cookies.get(DEV_COOKIE_NAME)?.value);
+    if (devUser) user = devUser;
+  }
 
   return { response, user };
 }

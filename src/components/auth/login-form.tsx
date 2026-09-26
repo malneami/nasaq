@@ -159,6 +159,25 @@ export function LoginForm({ oauthError = false }: { oauthError?: boolean }) {
           </Button>
         </div>
       </form>
+
+      {process.env.NODE_ENV === 'development' ? (
+        <div className="pt-2">
+          <Separator className="mb-4" />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="w-full text-xs text-muted-foreground"
+            disabled={isSubmitting}
+            onClick={async () => {
+              await fetch('/api/auth/dev-login');
+              window.location.href = `/${locale}/today`;
+            }}
+          >
+            🧪 Sign in as test user
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 }

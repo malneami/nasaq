@@ -1,10 +1,12 @@
 'use server';
 
+import { cookies } from 'next/headers';
 import { getLocale } from 'next-intl/server';
 import { redirect } from '@/lib/i18n/navigation';
 import { isSupabaseConfigured } from '@/lib/env';
 import { createClient } from '@/lib/supabase/server';
 import { authSchema, type AuthInput } from '@/lib/validations/auth';
+import { DEV_COOKIE_NAME } from '@/lib/auth/dev-session';
 
 export type AuthErrorKey =
   | 'invalidEmail'
@@ -88,6 +90,10 @@ export async function signOut() {
     const supabase = await createClient();
     await supabase.auth.signOut();
   }
+
+  // Clear dev session cookie if present
+  const cookieStore = await cookies();
+  cookieStore.delete(DEV_COOKIE_NAME);
 
   const locale = await getLocale();
   redirect({ href: '/login', locale });
