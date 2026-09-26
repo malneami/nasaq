@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import type en from '@/messages/en.json';
 import { toast } from 'sonner';
 import { StatusPill, TASK_STATUS_TONES } from '@/components/status-pill';
 import { TodaySection } from '@/components/today/today-section';
@@ -16,12 +16,38 @@ import {
 import type { DailyFocusItem, TodayOutcomesModel } from '@/lib/today/types';
 import type { TaskStatus } from '@/lib/db/schema';
 
+export type TodayMessages = typeof en.today;
+
+type TranslationValues = Record<string, string | number>;
+
+function translate(
+  messages: TodayMessages,
+  key: string,
+  values?: TranslationValues,
+): string {
+  const message = key
+    .split('.')
+    .reduce<unknown>((current, part) =>
+      current && typeof current === 'object'
+        ? (current as Record<string, unknown>)[part]
+        : undefined,
+    messages);
+
+  if (typeof message !== 'string') return key;
+
+  return values
+    ? message.replace(/\{(\w+)\}/g, (_, name: string) =>
+        String(values[name] ?? `{${name}}`),
+      )
+    : message;
+}
+
 function OutcomeRow({
   item,
   t,
 }: {
   item: DailyFocusItem;
-  t: ReturnType<typeof useTranslations<'today'>>;
+  t: (key: string, values?: TranslationValues) => string;
 }) {
   const status =
     item.status && item.status !== 'focus' ? (item.status as TaskStatus) : null;
@@ -49,8 +75,15 @@ function OutcomeRow({
   );
 }
 
-export function TodayOutcomes({ initial }: { initial: TodayOutcomesModel }) {
-  const t = useTranslations('today');
+export function TodayOutcomes({
+  initial,
+  messages,
+}: {
+  initial: TodayOutcomesModel;
+  messages: TodayMessages;
+}) {
+  const t = (key: string, values?: TranslationValues) =>
+    translate(messages, key, values);
   const [confirmed, setConfirmed] = useState(initial.confirmed);
   const [proposal, setProposal] = useState(initial.proposal);
   const [draft, setDraft] = useState('');

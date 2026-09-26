@@ -1,19 +1,26 @@
 import { Suspense } from 'react';
+import { getMessages } from 'next-intl/server';
 import { TodayAttention } from '@/components/today/today-attention';
 import { TodayFinance } from '@/components/today/today-finance';
 import { TodayFollowUps } from '@/components/today/today-followups';
 import { TodayHeaderView } from '@/components/today/today-header';
-import { TodayOutcomes } from '@/components/today/today-outcomes';
+import {
+  TodayOutcomes,
+  type TodayMessages,
+} from '@/components/today/today-outcomes';
 import { TodaySchedule } from '@/components/today/today-schedule';
 import { TodaySkeleton } from '@/components/today/today-section';
 import { getTodayModel } from '@/lib/today/load';
 
 async function TodayLead() {
-  const model = await getTodayModel();
+  const [model, messages] = await Promise.all([getTodayModel(), getMessages()]);
   return (
     <div className="space-y-8">
       <TodayHeaderView header={model.header} />
-      <TodayOutcomes initial={model.outcomes} />
+      <TodayOutcomes
+        initial={model.outcomes}
+        messages={messages.today as TodayMessages}
+      />
     </div>
   );
 }
