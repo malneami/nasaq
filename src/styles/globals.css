@@ -40,12 +40,6 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --color-navy: var(--navy);
-  --color-gold: var(--gold);
-  --color-ink: var(--ink);
-  --color-sage: var(--sage);
-  --color-sand: var(--sand);
-  --color-mist: var(--mist);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -61,89 +55,80 @@
 
 /*
   Nasaq brand platform 2026
-  Ink Navy #0A1022 · Nasaq Navy #172B5D · Focus Orange #F3A52F
-  Balance Sage #5A9A82 · Warm Sand #D9D2C3 · Nasaq Mist #E8EDF5
-  Motif: the path shows direction; the orange focus dot marks priority.
+  Navy #15265A · Amber #D9902C
+  Motif: the path shows direction; the amber dot marks priority.
 */
 :root {
-  --ink: #0a1022;
-  --navy: #172b5d;
-  --gold: #f3a52f;
-  --sage: #5a9a82;
-  --sand: #d9d2c3;
-  --mist: #e8edf5;
+  --navy: #15265a;
+  --gold: #d9902c;
   --background: #f7f5f1;
-  --foreground: #0a1022;
+  --foreground: #15265a;
   --card: #ffffff;
-  --card-foreground: #0a1022;
+  --card-foreground: #15265a;
   --popover: #ffffff;
-  --popover-foreground: #0a1022;
-  --primary: #172b5d;
+  --popover-foreground: #15265a;
+  --primary: #15265a;
   --primary-foreground: #f7f5f1;
-  --secondary: #e8edf5;
-  --secondary-foreground: #172b5d;
-  --muted: #efece6;
-  --muted-foreground: #5a6478;
-  --accent: #f3a52f;
-  --accent-foreground: #0a1022;
+  --secondary: #edeef2;
+  --secondary-foreground: #15265a;
+  --muted: #f0eff3;
+  --muted-foreground: #6b7280;
+  --accent: #d9902c;
+  --accent-foreground: #15265a;
   --destructive: #b42318;
-  --border: color-mix(in srgb, #d9d2c3 72%, #e8edf5);
-  --input: color-mix(in srgb, #d9d2c3 72%, #e8edf5);
-  --ring: #f3a52f;
-  --chart-1: #172b5d;
-  --chart-2: #f3a52f;
-  --chart-3: #5a9a82;
-  --chart-4: #8a9bc4;
-  --chart-5: #0a1022;
+  --border: #e2dfe4;
+  --input: #e2dfe4;
+  --ring: #d9902c;
+  --chart-1: #15265a;
+  --chart-2: #d9902c;
+  --chart-3: #9ca3b4;
+  --chart-4: #6b7da0;
+  --chart-5: #2a3a5c;
   --radius: 0.75rem;
-  --sidebar: #eef1f7;
-  --sidebar-foreground: #0a1022;
-  --sidebar-primary: #172b5d;
+  --sidebar: #f0f1f5;
+  --sidebar-foreground: #15265a;
+  --sidebar-primary: #15265a;
   --sidebar-primary-foreground: #f7f5f1;
-  --sidebar-accent: #e0e7f4;
-  --sidebar-accent-foreground: #172b5d;
-  --sidebar-border: color-mix(in srgb, #d9d2c3 55%, #e8edf5);
-  --sidebar-ring: #f3a52f;
+  --sidebar-accent: #e8eaf0;
+  --sidebar-accent-foreground: #15265a;
+  --sidebar-border: #e2dfe4;
+  --sidebar-ring: #d9902c;
 }
 
 .dark {
-  --ink: #0a1022;
-  --navy: #172b5d;
-  --gold: #f3a52f;
-  --sage: #5a9a82;
-  --sand: #d9d2c3;
-  --mist: #e8edf5;
-  --background: #0a1022;
-  --foreground: #e8edf5;
-  --card: #10182c;
-  --card-foreground: #e8edf5;
-  --popover: #10182c;
-  --popover-foreground: #e8edf5;
+  --navy: #15265a;
+  --gold: #d9902c;
+  --background: #0e1420;
+  --foreground: #d8dce4;
+  --card: #161e2e;
+  --card-foreground: #d8dce4;
+  --popover: #161e2e;
+  --popover-foreground: #d8dce4;
   --primary: #3d5a9c;
   --primary-foreground: #f7f5f1;
-  --secondary: #152038;
-  --secondary-foreground: #e8edf5;
-  --muted: #152038;
-  --muted-foreground: #a8b0c4;
-  --accent: #f3a52f;
-  --accent-foreground: #0a1022;
+  --secondary: #1e2638;
+  --secondary-foreground: #d8dce4;
+  --muted: #1e2638;
+  --muted-foreground: #9ca3b4;
+  --accent: #d9902c;
+  --accent-foreground: #15265a;
   --destructive: #f04438;
-  --border: rgb(232 237 245 / 12%);
-  --input: rgb(232 237 245 / 14%);
-  --ring: #f3a52f;
+  --border: rgb(216 220 228 / 12%);
+  --input: rgb(216 220 228 / 14%);
+  --ring: #d9902c;
   --chart-1: #3d5a9c;
-  --chart-2: #f3a52f;
-  --chart-3: #5a9a82;
-  --chart-4: #8a9bc4;
-  --chart-5: #e8edf5;
-  --sidebar: #070c18;
-  --sidebar-foreground: #e8edf5;
-  --sidebar-primary: #f3a52f;
-  --sidebar-primary-foreground: #0a1022;
-  --sidebar-accent: #152038;
-  --sidebar-accent-foreground: #e8edf5;
-  --sidebar-border: rgb(232 237 245 / 8%);
-  --sidebar-ring: #f3a52f;
+  --chart-2: #d9902c;
+  --chart-3: #9ca3b4;
+  --chart-4: #6b7da0;
+  --chart-5: #d8dce4;
+  --sidebar: #0a0f1a;
+  --sidebar-foreground: #d8dce4;
+  --sidebar-primary: #d9902c;
+  --sidebar-primary-foreground: #15265a;
+  --sidebar-accent: #1e2638;
+  --sidebar-accent-foreground: #d8dce4;
+  --sidebar-border: rgb(216 220 228 / 8%);
+  --sidebar-ring: #d9902c;
 }
 
 html[dir='rtl'] {

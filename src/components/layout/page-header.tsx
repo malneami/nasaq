@@ -13,7 +13,7 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        'mb-8 flex items-start gap-3 border-b border-sand/80 pb-4',
+        'mb-8 flex items-start gap-3 border-b border-border pb-4',
         className,
       )}
     >
