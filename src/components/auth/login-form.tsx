@@ -10,10 +10,38 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { signIn, signUp } from '@/lib/auth/actions';
 import { getSupabasePublicEnv } from '@/lib/env';
 import { createClient } from '@/lib/supabase/client';
 import { authSchema, type AuthInput } from '@/lib/validations/auth';
+
+type AuthErrorKey =
+  | 'invalidEmail'
+  | 'passwordMin'
+  | 'invalidCredentials'
+  | 'createFailed'
+  | 'notConfigured'
+  | 'confirmEmail';
+
+type AuthApiResponse = {
+  error?: AuthErrorKey;
+  success?: AuthErrorKey;
+};
+
+async function authFetch(
+  endpoint: string,
+  values: AuthInput,
+): Promise<AuthApiResponse> {
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(values),
+    });
+    return (await res.json()) as AuthApiResponse;
+  } catch {
+    return { error: 'invalidCredentials' };
+  }
+}
 
 export function LoginForm({ oauthError = false }: { oauthError?: boolean }) {
   const t = useTranslations('auth');
@@ -40,8 +68,9 @@ export function LoginForm({ oauthError = false }: { oauthError?: boolean }) {
   async function submit(values: AuthInput, action: 'in' | 'up'): Promise<void> {
     setPendingAction(action);
     try {
-      const result =
-        action === 'in' ? await signIn(values) : await signUp(values);
+      const endpoint =
+        action === 'in' ? '/api/auth/sign-in' : '/api/auth/sign-up';
+      const result = await authFetch(endpoint, values);
 
       if (result?.error) {
         toast.error(t(result.error));
@@ -49,6 +78,10 @@ export function LoginForm({ oauthError = false }: { oauthError?: boolean }) {
 
       if (result?.success) {
         toast.success(t(result.success));
+      }
+
+      if (!result?.error && result?.success !== 'confirmEmail') {
+        window.location.href = `/${locale}/today`;
       }
     } finally {
       setPendingAction(null);

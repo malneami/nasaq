@@ -1,15 +1,31 @@
-import { getTranslations } from 'next-intl/server';
-import { signOut } from '@/lib/auth/actions';
+'use client';
+
+import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
-export async function SignOutButton() {
-  const t = await getTranslations('auth');
+export function SignOutButton() {
+  const t = useTranslations('auth');
+  const [pending, setPending] = useState(false);
+
+  async function handleSignOut() {
+    setPending(true);
+    try {
+      await fetch('/api/auth/sign-out', { method: 'POST' });
+    } finally {
+      window.location.href = '/';
+    }
+  }
 
   return (
-    <form action={signOut}>
-      <Button type="submit" variant="ghost" size="sm">
-        {t('signOut')}
-      </Button>
-    </form>
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      disabled={pending}
+      onClick={() => void handleSignOut()}
+    >
+      {t('signOut')}
+    </Button>
   );
 }
